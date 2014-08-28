@@ -1,7 +1,7 @@
 function [ ds1, ds2 ] = minmaxcut( w )
 %use minmaxcut from Chris Ding and Xiaofeng He to cluster data
-%   [V, D] = minmaxcut( w )
-%   V, Q are the same with function eig's output
+%   [ds1, ds2] = minmaxcut( w )
+%   ds1, ds2 are column vectors contains element indexes of each class
 %   w is a weight matrix
 D = diag( sum(w) );
 w_hat = ( D^(-0.5) )* w *( D^(-0.5) );

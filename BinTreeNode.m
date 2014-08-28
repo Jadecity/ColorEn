@@ -13,11 +13,15 @@ classdef BinTreeNode < handle
         data;
         right;
         left;
+        other;
     end
     
     methods
         function obj = BinTreeNode()
             obj.data = [];
+            obj.right = [];
+            obj.left = [];
+            obj.other = [];
         end
     end
     
