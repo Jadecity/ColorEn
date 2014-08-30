@@ -1,6 +1,6 @@
-function buildMapTree( root, ftspace, gweight, maptype )
+function buildTree( root, ftspace, gweight, maptype )
 %BUILDMAPTREE use feature space to build a mapping tree
-%   function buildMapTree( ftspace, maptype )
+%   function buildTree( ftspace, maptype )
 %   maptype: either 'color' or 'luminance'
 %   ftspace: feature space, each column is a feature vector of a point
 %   gweight: a weight matrix of points, short for global weight
@@ -9,6 +9,7 @@ function buildMapTree( root, ftspace, gweight, maptype )
 %   Author: lvhao
 %   Email:  lvhaoexp@163.com
 %   Date: 2014-08-28
+
 if strcmp(maptype, 'color')
     loop = 300;
 end
@@ -42,8 +43,8 @@ for cnt=1:loop
     least.right = right;
 end%end for loop
 
-%learn the mapping function for each leaf node
-
 %learn an svm for each inner node
+trainsvm4node(root, ftspace);
+
 
 end

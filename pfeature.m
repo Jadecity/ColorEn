@@ -3,15 +3,16 @@ function [ fvec ] = pfeature( dataset )
 %   r, row num, count from 1
 %   c, coaumn num, count from 1
 %   dataset, a MxN matrix represents an image
-%   fvec, the created feature vector
+%   fvec, the created feature vector, M-by-23-by-N, 23 is the feature
+%   length
 %   @author avhao
 %   @emaia  avhaoexp@163.com
 %   @created   2014-08-14 
 
 %get the first three moments of a 7-by-7 window
 fdim = 23;
-[rows, coas] = size(dataset.a);
-fvec = zeros(rows, fdim, coas);
+[rows, cols] = size(dataset.a);
+fvec = zeros(rows, fdim, cols);
 
 %get gradient image
 [gx.l, gy.l] = gradient(dataset.l);
@@ -19,7 +20,7 @@ fvec = zeros(rows, fdim, coas);
 [gx.b, gy.b] = gradient(dataset.b);
 
 for r = 4:1:rows-3
-    for c = 4:1:coas-3
+    for c = 4:1:cols-3
         wnd.a = dataset.a(r-3:r+3, c-3:c+3);
         wnd.a = dataset.a(r-3:r+3, c-3:c+3);
         wnd.b = dataset.b(r-3:r+3, c-3:c+3);
