@@ -8,13 +8,14 @@ clear
 trainImgFolder = 'res/images'
 %for each image pair
 tic
-rownum = 512;
-colnum = 512;
+rownum = 100;
+colnum = 100;
 ftnum = 28;
+wdim_max = 10000;
 for num = 1:1
     %read in images
-    imLname = strcat(trainImgFolder, '/',num2str(num),'_L.jpg');
-    imHname = strcat(trainImgFolder, '/',num2str(num),'_H.jpg');
+    imLname = strcat(trainImgFolder, '/',num2str(num),'_L100.jpg');
+    imHname = strcat(trainImgFolder, '/',num2str(num),'_H100.jpg');
     imL = imread(imLname);
     imH = imread(imHname);
     colorTransform = makecform('srgb2lab');
@@ -28,12 +29,22 @@ for num = 1:1
     [gHx.l, gHy.l] = gradient(imH_lab(:,:,1));
     [gHx.a, gHy.a] = gradient(imH_lab(:,:,2));
     [gHx.b, gHy.b] = gradient(imH_lab(:,:,3)); 
-    ftmap = zeros(rownum, colnum, ftnum);
+    ftmap = zeros(ftnum, rownum*colnum);
     ftmap_first = pfeature(imL_lab, gLx, gLy);
-    ftmap(:,:,1:23) = ftmap_first;
-    ftmap(:,:,24) = gHx.l;
-    ftmap(:,:,25) = gHy.l;
-    ftmap(:,:,26:28) = imH_lab;
+    ftmap(1:23, :) = ftmap_first;
+    ftmap(24, :) = gHx.l(:);
+    ftmap(25, :) = gHy.l(:);
+    ftmap(26, :) = reshape(imH_lab(:,:,1), 1, rownum*colnum);
     clear ftmap_first
 end
 toc
+root = BinTreeNode();
+%point is numbered by the same rule with matlab when dealing with matrix
+%elements
+root.data = 1:rownum*colnum;
+gweight = zeros(wdim_max, wdim_max);
+for c = 1:rownum*colnum
+    gweight(c,c:end) = abs(acos(ftmap(:,c)'*ftmap(:,c:end)));
+end
+buildTree(root, ftmap, gweight, 'color');
+clear cnt;

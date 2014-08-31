@@ -1,2 +1,6 @@
 Elapsed time is 157.291185 seconds.
 对一个512*512的图片提前23维特征大概需要157秒。
+
+Elapsed time is 208.865076 seconds.Elapsed time is 164.657311 seconds.
+对一个512*512的图片提前所有维特征大概需要209秒（on server），165秒（on my notebook）。
+为什么程序在服务器上运行的时间比在我笔记本上运行的时间还长呢？
