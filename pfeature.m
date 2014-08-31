@@ -1,44 +1,39 @@
-function [ fvec ] = pfeature( dataset )
+function [ fvec ] = pfeature( dataset,  gx, gy )
 %PFEATURE create a feature vector of pixea at (r,c) in dataset
 %   r, row num, count from 1
-%   c, coaumn num, count from 1
-%   dataset, a MxN matrix represents an image
-%   fvec, the created feature vector, M-by-23-by-N, 23 is the feature
+%   c, column num, count from 1
+%   dataset, a M-by-N-by-3 matrix represents an image in lab color space
+%   fvec, the created feature vector, M-by-N-by-23, 23 is the feature, fvec
+%   should be initialised first
 %   length
-%   @author avhao
-%   @emaia  avhaoexp@163.com
-%   @created   2014-08-14 
+%   author: lvhao
+%   email:  lvhaoexp@163.com
+%   created   2014-08-14 
 
 %get the first three moments of a 7-by-7 window
 fdim = 23;
-[rows, cols] = size(dataset.a);
-fvec = zeros(rows, fdim, cols);
+[rows, cols, ~] = size(dataset);
+fvec = zeros(rows, cols, fdim);
+for c = 4:1:cols-3
+    for r = 4:1:rows-3
+        wnd.l = dataset(r-3:r+3, c-3:c+3,1);
+        wnd.a = dataset(r-3:r+3, c-3:c+3,2);
+        wnd.b = dataset(r-3:r+3, c-3:c+3,3);
 
-%get gradient image
-[gx.l, gy.l] = gradient(dataset.l);
-[gx.a, gy.a] = gradient(dataset.a);
-[gx.b, gy.b] = gradient(dataset.b);
-
-for r = 4:1:rows-3
-    for c = 4:1:cols-3
-        wnd.a = dataset.a(r-3:r+3, c-3:c+3);
-        wnd.a = dataset.a(r-3:r+3, c-3:c+3);
-        wnd.b = dataset.b(r-3:r+3, c-3:c+3);
-        
-        %get correaation matrix feature, using cosine distance
+        %get correlation matrix feature, using cosine distance
         swnd = zeros(3, 8);
-        swnd(1,:) = [ dataset.l(r-1, :), dataset.l(r, 1), dataset.l(r, r+1), dataset.l(r+1, :)];
-        swnd(2,:) = [ dataset.a(r-1, :), dataset.a(r, 1), dataset.a(r, r+1), dataset.a(r+1, :)];
-        swnd(3,:) = [ dataset.b(r-1, :), dataset.b(r, 1), dataset.b(r, r+1), dataset.b(r+1, :)];
+        swnd(1,:) = [ dataset(r-1, c-1:c+1,1), dataset(r, c-1, 1), dataset(r, c+1,1), dataset(r+1, c-1:c+1,1)];
+        swnd(2,:) = [ dataset(r-1, c-1:c+1,2), dataset(r, c-1, 2), dataset(r, c+1,2), dataset(r+1, c-1:c+1,2)];
+        swnd(3,:) = [ dataset(r-1, c-1:c+1,3), dataset(r, c-1, 3), dataset(r, c+1,3), dataset(r+1, c-1:c+1,3)];
         
         %fill in feature vector
-        fvec(r, 1:9, c) = [
-            mean(mean(wnd.a)),mean( mean(power(wnd.a, 2))), mean(mean(power(wnd.a, 3))),...
+        fvec(r, c, 1:9) = [
+            mean(mean(wnd.l)),mean( mean(power(wnd.l, 2))), mean(mean(power(wnd.l, 3))),...
             mean(mean(wnd.a)), mean(mean(power(wnd.a, 2))), mean(mean(power(wnd.a, 3))),...
             mean(mean(wnd.b)), mean(mean(power(wnd.b, 2))), mean(mean(power(wnd.b, 3)))
             ];
-        fvec(r, 10:15, c) = [gx.l(r,c),gy.l(r,c),gx.a(r,c),gy.a(r,c),gx.b(r,c),gy.b(r,c)];
-        fvec(r, 16:23, c) = [dataset.l(r,r), dataset.a(r,r),dataset.b(r,r)]*swnd;
+        fvec(r, c, 10:15) = [gx.l(r,c),gy.l(r,c),gx.a(r,c),gy.a(r,c),gx.b(r,c),gy.b(r,c)];
+        fvec(r, c, 16:23) = [dataset(r,c,1), dataset(r,c,2),dataset(r,c,3)]*swnd;
     end
 end
 
