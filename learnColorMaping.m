@@ -12,7 +12,9 @@ C = zeros(rows, 3);
 
 row = 1;
 for r = 1:rows
-    [l,a,b] = im1(r,:);
+    l = im1(r,1);
+    a = im1(r,2);
+    b = im1(r,3);
     Q(row, :) = [l^2,a^2,b^2,l*a,l*b,a*b,l,a,b, 1];
     C(row, :) = im2(r,:);
     row = row + 1;

@@ -27,6 +27,9 @@ for cnt=1:loop
         least = root;
     end
 
+    if size(least.data, 2) == 1
+        continue;
+    end
     weight = gweight(least.data(:), least.data(:));
     [c1, c2] = minmaxcut(weight);
 

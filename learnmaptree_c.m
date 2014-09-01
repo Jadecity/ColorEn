@@ -1,4 +1,4 @@
-function learnmaptree_c( node, imL, imH)
+function learnmaptree_c( node, imL, imH )
 %LEARNMAPTREE_C learn color mapping for each leaf node
 %   function learnmaptree_c( node, imL, imH)
 %   node: leaf node to learn
@@ -13,8 +13,8 @@ if ~isempty(node.left) || ~isempty(node.right)
     learnmaptree_c(node.left, imL, imH);
     learnmaptree_c(node.right, imL, imH);
 end
-im1 = imL(node.data);
-im2 = imH(node.data);
+im1 = imL(node.data, :);
+im2 = imH(node.data, :);
 [node.other.A, node.other.b] = learnColorMaping(im1, im2);
 
 end

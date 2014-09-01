@@ -5,8 +5,8 @@ function [ avgs ] = avgsim( ck, w )
 %   w is the weight matrix
 %   avgs is the output score of self similarity
 
-wnd = w(ck, ck);
-avgs = sum(sum(wnd))/(size(ck,2)^2);
+%wnd = w(ck, ck);
+avgs = sum(sum(w))/(size(ck,2)^2);
 
 end
 

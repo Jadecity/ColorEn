@@ -22,8 +22,8 @@ labels(size(negative,1)+1:end, 1) = 1;
 
 root.other.svm = svmtrain([negative;positive], labels, 'kernel_function', 'rbf');
 
-trainsvm4node(root.left);
-trainsvm4node(root.right);
+trainsvm4node(root.left, ftspace);
+trainsvm4node(root.right, ftspace);
 
 end
 

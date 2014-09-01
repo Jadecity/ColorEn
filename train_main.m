@@ -21,6 +21,8 @@ for num = 1:1
     colorTransform = makecform('srgb2lab');
     imL_lab = single(applycform(imL, colorTransform));
     imH_lab = single(applycform(imH, colorTransform));
+    imL_2dim = reshape(imL_lab, rownum*colnum, 3);
+    imH_2dim = reshape(imH_lab, rownum*colnum, 3);
     
     %create gradient map
     [gLx.l, gLy.l] = gradient(imL_lab(:,:,1));
@@ -47,4 +49,6 @@ for c = 1:rownum*colnum
     gweight(c,c:end) = abs(acos(ftmap(:,c)'*ftmap(:,c:end)));
 end
 buildTree(root, ftmap, gweight, 'color');
+learnmaptree_c(root, imL_2dim, imH_2dim);
+
 clear cnt;
