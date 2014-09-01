@@ -13,18 +13,19 @@ function [ fvec ] = pfeature( dataset,  gx, gy )
 fdim = 23;
 [rows, cols, ~] = size(dataset);
 fvec = zeros(fdim, rows*cols );
+imgPadded = padarray(dataset, [3 3],'symmetric','both');
 cnt = 1;
-for c = 4:1:cols-3
-    for r = 4:1:rows-3
-        wnd.l = dataset(r-3:r+3, c-3:c+3,1);
-        wnd.a = dataset(r-3:r+3, c-3:c+3,2);
-        wnd.b = dataset(r-3:r+3, c-3:c+3,3);
+for c = 4:cols+3
+    for r = 4:rows+3
+        wnd.l = imgPadded(r-3:r+3, c-3:c+3,1);
+        wnd.a = imgPadded(r-3:r+3, c-3:c+3,2);
+        wnd.b = imgPadded(r-3:r+3, c-3:c+3,3);
 
         %get correlation matrix feature, using cosine distance
         swnd = zeros(3, 8);
-        swnd(1,:) = [ dataset(r-1, c-1:c+1,1), dataset(r, c-1, 1), dataset(r, c+1,1), dataset(r+1, c-1:c+1,1)];
-        swnd(2,:) = [ dataset(r-1, c-1:c+1,2), dataset(r, c-1, 2), dataset(r, c+1,2), dataset(r+1, c-1:c+1,2)];
-        swnd(3,:) = [ dataset(r-1, c-1:c+1,3), dataset(r, c-1, 3), dataset(r, c+1,3), dataset(r+1, c-1:c+1,3)];
+        swnd(1,:) = [ imgPadded(r-1, c-1:c+1,1), imgPadded(r, c-1, 1), imgPadded(r, c+1,1), imgPadded(r+1, c-1:c+1,1)];
+        swnd(2,:) = [ imgPadded(r-1, c-1:c+1,2), imgPadded(r, c-1, 2), imgPadded(r, c+1,2), imgPadded(r+1, c-1:c+1,2)];
+        swnd(3,:) = [ imgPadded(r-1, c-1:c+1,3), imgPadded(r, c-1, 3), imgPadded(r, c+1,3), imgPadded(r+1, c-1:c+1,3)];
         
         %fill in feature vector
         fvec(1:9, cnt) = [
@@ -32,8 +33,8 @@ for c = 4:1:cols-3
             mean(mean(wnd.a)), mean(mean(power(wnd.a, 2))), mean(mean(power(wnd.a, 3))),...
             mean(mean(wnd.b)), mean(mean(power(wnd.b, 2))), mean(mean(power(wnd.b, 3)))
             ];
-        fvec(10:15, cnt) = [gx.l(r,c),gy.l(r,c),gx.a(r,c),gy.a(r,c),gx.b(r,c),gy.b(r,c)];
-        fvec(16:23, cnt) = [dataset(r,c,1), dataset(r,c,2),dataset(r,c,3)]*swnd;
+        fvec(10:15, cnt) = [gx.l(r-3,c-3),gy.l(r-3,c-3),gx.a(r-3,c-3),gy.a(r-3,c-3),gx.b(r-3,c-3),gy.b(r-3,c-3)];
+        fvec(16:23, cnt) = [imgPadded(r,c,1), imgPadded(r,c,2),imgPadded(r,c,3)]*swnd;
     end
 end
 

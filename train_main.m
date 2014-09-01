@@ -5,7 +5,7 @@
 
 clear
 %total 100 images
-trainImgFolder = 'res/images'
+trainImgFolder = 'res/images';
 %for each image pair
 tic
 rownum = 100;
@@ -37,7 +37,7 @@ for num = 1:1
     ftmap(24, :) = gHx.l(:);
     ftmap(25, :) = gHy.l(:);
     ftmap(26, :) = reshape(imH_lab(:,:,1), 1, rownum*colnum);
-    clear ftmap_first
+    clear ftmap_first;
 end
 toc
 root = BinTreeNode();
@@ -53,4 +53,4 @@ learnmaptree_c(root, imL_2dim, imH_2dim);
 
 %clear all big variables, left only tree root
 clear cnt;
-clear imL_2dim,imH_2dim,ftmap,gweight,imL,imH,imL_lab,imH_lab,gLx,gLy,gHx,gHy,ftmap_first;
+clear imL_2dim imH_2dim ftmap gweight imL imH imL_lab imH_lab gLx gLy gHx gHy;
