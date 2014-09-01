@@ -51,4 +51,6 @@ end
 buildTree(root, ftmap, gweight, 'color');
 learnmaptree_c(root, imL_2dim, imH_2dim);
 
+%clear all big variables, left only tree root
 clear cnt;
+clear imL_2dim,imH_2dim,ftmap,gweight,imL,imH,imL_lab,imH_lab,gLx,gLy,gHx,gHy,ftmap_first;
