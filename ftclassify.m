@@ -9,6 +9,12 @@ function hdl = ftclassify( ft, root )
 %   Date : 2014-09-03
 
 curnode = root;
-while isempty( curnode.left ) && isempty( curnode.right )
-  curnode.
+while ~isempty( curnode.left ) && ~isempty( curnode.right )
+  label = svmpredict( 1, ft, curnode.other.svm);
+  if label == 0
+    curnode = curnode.left;
+  else
+    curnode = curnode.right;
 end
+
+hdl = curnode;

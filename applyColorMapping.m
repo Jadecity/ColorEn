@@ -37,12 +37,45 @@ sfimg = softseg( img, ftdb );
 %build a histogram for all leaf node
 leafs = buildLeafArray( root );
 
+kimgs = cell(1,K);
+for k=1:K
+  kimgs{k} = zeros(rownum, colnum, 3);
+end
+
 %for each edit, find out pixels with probability > 0.5
 for k = 1:K
   pixpos = find( sfimg(:,:, k) > 0.5 );
   hist = zeros( size(leafs) );
   
   %for current segment, build voting histogram
+  %for each pixel feature, vote in histogram
+  for p=pixpos
+    ft = ftmap( :, p );
+    lfnode = ftclassify( ft, root );
+    hist( lfnode.other.idx ) = hist( lfnode.other.idx ) + 1;
+  end
+
+  %find first three mappings
+  hist = hist/sum(hist);
+  [st, ind] = sort( hist, 'descend' );
   
-  
+  %for each pix in current seg, do color mapping
+  for p=pixpos
+    rw = mod(p,rownum);
+    cl = ceil(p/rownum);
+    if rw == 0
+      rw = rownum;
+    end
+    lab = squeeze(img_lab(rw,cl,:));
+    l = lab(1);
+    a = lab(2);
+    b = lab(3);
+    Qi = [l^2,a^2,b^2,l*a,l*b,a*b,l,a,b, 1];
+    
+    kimgs{k}(rw, cl, :) = st(1)*( leafs(ind(1)).other.A*Qi + leafs(ind(1)).other.b)+...
+	st(2)*( leafs(ind(2)).other.A*Qi + leafs(ind(2)).other.b)+...
+	st(3)*( leafs(ind(3)).other.A*Qi + leafs(ind(3)).other.b)+...;
+  end
 end
+
+%merge final color enhanced image
