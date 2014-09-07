@@ -86,4 +86,5 @@ for k=1:K
 end
 
 colorTransform = makecform('lab2srgb');
-img_final = applycform( img_final, colorTransform);
+img_ = applycform(img, colorTransform);
+img_final = 
