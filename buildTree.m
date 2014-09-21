@@ -23,7 +23,6 @@ for cnt=1:loop
     
     %if no child can be split, split root
     if isempty(least)
-        %make weight matrix
         least = root;
     end
 

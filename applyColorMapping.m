@@ -1,4 +1,4 @@
-function img_final = applyColorMapping( img, root, ftdb )
+function img_final = applyColorMapping( img, root )
 %APPLYCOLORMAPPING do actually mapping of img according to the learned tree
 %   function applyColorMapping( img, root )
 %   img: image file to be enhanced, should be in RGB color space, M-by-N-by-3 dimension
@@ -22,30 +22,29 @@ img_2dim = reshape(img_lab, rownum*colnum, 3);
 
 
 %extract feature map
+ftnum = 26;
 ftmap = zeros(ftnum, rownum*colnum);
 ftmap_first = pfeature(img_lab, gx, gy);
+
 ftmap(1:23, :) = ftmap_first;
 ftmap(24, :) = gx.l(:);
 ftmap(25, :) = gy.l(:);
 ftmap(26, :) = reshape(img_lab(:,:,1), 1, rownum*colnum);
 
-
 %soft segmented image
-sfimg = softseg( img, ftdb );
-
-[rows, cols, K] = size(sfimg);
+K = 8;
+[ L, modelparams ] = buildSegmentation( img, 'gmm', K );
+rgb = label2rgb(L);
+imshow(rgb);
+sfimg = modelparams.z;
 
 %build a histogram for all leaf node
 leafs = buildLeafArray( root );
 
 kimgs = cell(1,K);
-for k=1:K
-  kimgs{k} = zeros(rownum, colnum, 3);
-end
-
 %for each edit, find out pixels with probability > 0.5
 for k = 1:K
-  pixpos = find( sfimg(:,:, k) > 0.5 );
+  pixpos = find( sfimg(k, :) > 0.5 );
   hist = zeros( size(leafs) );
   
   %for current segment, build voting histogram
@@ -61,29 +60,23 @@ for k = 1:K
   [st, ind] = sort( hist, 'descend' );
   
   %for each pix in current seg, do color mapping
-  for p=pixpos
-    rw = mod(p,rownum);
-    cl = ceil(p/rownum);
-    if rw == 0
-      rw = rownum;
-    end
-    lab = squeeze(img_lab(rw,cl,:));
-    l = lab(1);
-    a = lab(2);
-    b = lab(3);
-    Qi = [l^2,a^2,b^2,l*a,l*b,a*b,l,a,b, 1];
-    
-    kimgs{k}(rw, cl, :) = st(1)*( leafs(ind(1)).other.A*Qi + leafs(ind(1)).other.b)+...
-	st(2)*( leafs(ind(2)).other.A*Qi + leafs(ind(2)).other.b)+...
-	st(3)*( leafs(ind(3)).other.A*Qi + leafs(ind(3)).other.b)+...;
-  end
-end
 
-%merge final color enhanced image
-img_final = zeros( rownum, colnum, 3 );
-for k=1:K
-  img_final = img_final + sfimg(:,:,k).*kimgs{k};
-end
+    l = img_2dim(pixpos, 1);
+    a = img_2dim(pixpos, 2);
+    b = img_2dim(pixpos, 3);
+    Qi = [l^2;a^2;b^2;l*a;l*b;a*b;l;a;b; 1];
 
-colorTransform = makecform('lab2srgb');
-img_final = applycform( img_final, colorTransform);
+    kimgs{k}(pixpos, :) = st(1)*( leafs(ind(1)).other.A*Qi + leafs(ind(1)).other.b)+...
+    st(2)*( leafs(ind(2)).other.A*Qi + leafs(ind(2)).other.b)+...
+    st(3)*( leafs(ind(3)).other.A*Qi + leafs(ind(3)).other.b);
+end
+% 
+% %merge final color enhanced image
+% img_final = zeros( rownum, colnum, 3 );
+% for k=1:K
+%   img_final = img_final + sfimg(:,:,k).*kimgs{k};
+% end
+% 
+% colorTransform = makecform('lab2srgb');
+% img_final = applycform( img_final, colorTransform);
+img_final = [];

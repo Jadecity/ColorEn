@@ -3,24 +3,28 @@
 %   Email: lvhaoexp@163.com
 %   Date: 2014-08-30
 
-clear
-%total 100 images
-trainImgFolder = 'res/images';
-%for each image pair
+clc;
+clear all;
+
+trainImgFolder = 'res/images/training';
+imgnum = 7;
+ftnum = 31;
+wdim_max = 20000;
+
+display('start building feature map');
 tic
-rownum = 100;
-colnum = 100;
-ftnum = 28;
-wdim_max = 10000;
-for num = 1:1
+%for each image pair, get feature
+colorTransform = makecform('srgb2lab');
+for num = 1:imgnum
     %read in images
-    imLname = strcat(trainImgFolder, '/',num2str(num),'_L100.jpg');
-    imHname = strcat(trainImgFolder, '/',num2str(num),'_H100.jpg');
+    imLname = strcat(trainImgFolder, '/',num2str(num),'_LD.jpg');
+    imHname = strcat(trainImgFolder, '/',num2str(num),'_HD.jpg');
     imL = imread(imLname);
     imH = imread(imHname);
-    colorTransform = makecform('srgb2lab');
-    imL_lab = single(applycform(imL, colorTransform));
-    imH_lab = single(applycform(imH, colorTransform));
+    [rownum, colnum, ~] = size(imL);
+    %do color space stransform
+    imL_lab = applycform(im2double(imL), colorTransform);
+    imH_lab = applycform(im2double(imH), colorTransform);
     imL_2dim = reshape(imL_lab, rownum*colnum, 3);
     imH_2dim = reshape(imH_lab, rownum*colnum, 3);
     
@@ -30,27 +34,45 @@ for num = 1:1
     [gLx.b, gLy.b] = gradient(imL_lab(:,:,3));
     [gHx.l, gHy.l] = gradient(imH_lab(:,:,1));
     [gHx.a, gHy.a] = gradient(imH_lab(:,:,2));
-    [gHx.b, gHy.b] = gradient(imH_lab(:,:,3)); 
-    ftmap = zeros(ftnum, rownum*colnum);
+    [gHx.b, gHy.b] = gradient(imH_lab(:,:,3));
+    
+    region = (num-1)*rownum*colnum+1:num*rownum*colnum;
     ftmap_first = pfeature(imL_lab, gLx, gLy);
-    ftmap(1:23, :) = ftmap_first;
-    ftmap(24, :) = gHx.l(:);
-    ftmap(25, :) = gHy.l(:);
-    ftmap(26, :) = reshape(imH_lab(:,:,1), 1, rownum*colnum);
+    ftmap(1:23, region) = ftmap_first;
+    ftmap(24, region) = gHx.l(:);
+    ftmap(25, region) = gHy.l(:);
+    ftmap(26:28, region) = imH_2dim';
+    %not part of feature, only to embed pixel information
+    ftmap(29:31, region) = imL_2dim';
     clear ftmap_first;
 end
 toc
-root = BinTreeNode();
-%point is numbered by the same rule with matlab when dealing with matrix
-%elements
-root.data = 1:rownum*colnum;
-gweight = zeros(wdim_max, wdim_max);
-for c = 1:rownum*colnum
-    gweight(c,c:end) = abs(acos(ftmap(:,c)'*ftmap(:,c:end)));
-end
-buildTree(root, ftmap, gweight, 'color');
-learnmaptree_c(root, imL_2dim, imH_2dim);
+%pick 20000 points to train model
+pixselected = randperm(rownum*colnum*imgnum, wdim_max);
+newftmap = ftmap(:, pixselected);
 
-%clear all big variables, left only tree root
-clear cnt;
-clear imL_2dim imH_2dim ftmap gweight imL imH imL_lab imH_lab gLx gLy gHx gHy;
+%train mapping tree, point is numbered by the same rule with matlab when 
+%dealing with matrix elements
+root = BinTreeNode();
+root.data = 1:wdim_max;
+gweight = zeros(wdim_max, wdim_max);
+display('getting weight matrix');
+tic
+for c = 1:wdim_max
+    gweight(c,c:end) = sqrt(sum(bsxfun(@minus, newftmap(1:28,c:end), newftmap(1:28,c)).^2)/ftnum);
+end
+gweight = gweight + gweight';
+toc
+
+display('building tree');
+tic
+buildTree(root, newftmap(1:28,:), gweight, 'color');
+toc
+
+display('learning mapping');
+tic
+learnmaptree_c(root, newftmap(29:31,:));
+toc
+%clear all big variables, left only tree root and save root
+clearvars -except root;
+save root.mat root;

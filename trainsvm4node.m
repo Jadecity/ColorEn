@@ -20,7 +20,7 @@ positive = ftspace(:, ppoints)';
 labels = zeros( size(negative,1)+size(positive,1), 1);
 labels(size(negative,1)+1:end, 1) = 1;
 
-root.other.svm = svmtrain([negative;positive], labels, 'kernel_function', 'rbf');
+root.other.svm = svmtrain(labels, [negative;positive]);
 
 trainsvm4node(root.left, ftspace);
 trainsvm4node(root.right, ftspace);
