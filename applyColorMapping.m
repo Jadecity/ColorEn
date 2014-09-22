@@ -29,13 +29,13 @@ ftmap_first = pfeature(img_lab, gx, gy);
 ftmap(1:23, :) = ftmap_first;
 ftmap(24, :) = gx.l(:);
 ftmap(25, :) = gy.l(:);
-ftmap(2628, :) = reshape(img_lab, rownum*colnum, 3)';
+ftmap(26:28, :) = reshape(img_lab, rownum*colnum, 3)';
 
 %soft segmented image
 K = 8;
 [ L, modelparams ] = buildSegmentation( img, 'gmm', K );
-rgb = label2rgb(L);
-imshow(rgb);
+% rgb = label2rgb(L);
+% imshow(rgb);
 sfimg = modelparams.z;
 
 %build a histogram for all leaf node
@@ -44,6 +44,7 @@ leafs = buildLeafArray( root );
 kimgs = cell(1,K);
 %for each edit, find out pixels with probability > 0.5
 for k = 1:K
+  kimgs{k} = zeros(rownum*colnum, 3);
   pixpos = find( sfimg(k, :) > 0.5 );
   hist = zeros( size(leafs) );
   
@@ -64,18 +65,19 @@ for k = 1:K
     l = img_2dim(pixpos, 1);
     a = img_2dim(pixpos, 2);
     b = img_2dim(pixpos, 3);
-    Qi = [l^2;a^2;b^2;l*a;l*b;a*b;l;a;b; 1];
+    Qi = cat(2,l.^2,a.^2,b.^2,l.*a,l.*b,a.*b,l,a,b);
 
-    kimgs{k}(pixpos, :) = st(1)*( leafs(ind(1)).other.A*Qi + leafs(ind(1)).other.b)+...
-    st(2)*( leafs(ind(2)).other.A*Qi + leafs(ind(2)).other.b)+...
-    st(3)*( leafs(ind(3)).other.A*Qi + leafs(ind(3)).other.b);
+    kimgs{k}(pixpos, :) = st(1)*( bsxfun(@minus,Qi*leafs(ind(1)).other.A', leafs(ind(1)).other.b) )+...
+    st(2)*( bsxfun(@minus,Qi*leafs(ind(2)).other.A', leafs(ind(2)).other.b ) )+...
+    st(3)*( bsxfun(@minus,Qi*leafs(ind(3)).other.A', leafs(ind(3)).other.b ) );
 end
 
 %merge final color enhanced image
-img_final = zeros( rownum, colnum, 3 );
+img_final = zeros( rownum*colnum, 3 );
 for k=1:K
-  img_final = img_final + sfimg(:,:,k).*kimgs{k};
+  img_final = img_final + cat(2,sfimg(k,:)'.*kimgs{k}(:,1), sfimg(k,:)'.*kimgs{k}(:,2), sfimg(k,:)'.*kimgs{k}(:,3));
 end
 
 colorTransform = makecform('lab2srgb');
+img_final = reshape(img_final, rownum, colnum, 3);
 img_final = uint8(applycform( img_final, colorTransform));
