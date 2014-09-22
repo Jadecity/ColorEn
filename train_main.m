@@ -71,7 +71,7 @@ toc
 
 display('learning mapping');
 tic
-learnmaptree_c(root, newftmap(29:31,:));
+learnmaptree_c(root, newftmap(26:31,:));
 toc
 %clear all big variables, left only tree root and save root
 clearvars -except root;

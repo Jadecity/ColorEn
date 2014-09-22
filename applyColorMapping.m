@@ -12,7 +12,7 @@ function img_final = applyColorMapping( img, root )
 %convert img to Lab color space
 [ rownum, colnum, ~ ] = size( img );
 colorTransform = makecform('srgb2lab');
-img_lab = single(applycform(img, colorTransform));
+img_lab = single(applycform(double(img), colorTransform));
 img_2dim = reshape(img_lab, rownum*colnum, 3);
 
 %generate gradient map
@@ -29,7 +29,7 @@ ftmap_first = pfeature(img_lab, gx, gy);
 ftmap(1:23, :) = ftmap_first;
 ftmap(24, :) = gx.l(:);
 ftmap(25, :) = gy.l(:);
-ftmap(26, :) = reshape(img_lab(:,:,1), 1, rownum*colnum);
+ftmap(2628, :) = reshape(img_lab, rownum*colnum, 3)';
 
 %soft segmented image
 K = 8;
@@ -70,13 +70,12 @@ for k = 1:K
     st(2)*( leafs(ind(2)).other.A*Qi + leafs(ind(2)).other.b)+...
     st(3)*( leafs(ind(3)).other.A*Qi + leafs(ind(3)).other.b);
 end
-% 
-% %merge final color enhanced image
-% img_final = zeros( rownum, colnum, 3 );
-% for k=1:K
-%   img_final = img_final + sfimg(:,:,k).*kimgs{k};
-% end
-% 
-% colorTransform = makecform('lab2srgb');
-% img_final = applycform( img_final, colorTransform);
-img_final = [];
+
+%merge final color enhanced image
+img_final = zeros( rownum, colnum, 3 );
+for k=1:K
+  img_final = img_final + sfimg(:,:,k).*kimgs{k};
+end
+
+colorTransform = makecform('lab2srgb');
+img_final = uint8(applycform( img_final, colorTransform));
