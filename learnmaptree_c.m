@@ -7,14 +7,19 @@ function learnmaptree_c( node, pixval )
 %   Author: lvhao
 %   Email: lvhaoexp@163.com
 %   Date : 2014-08-29
+if isempty(node)
+    return;
+end
 
-if ~isempty(node.left) || ~isempty(node.right)
+if ~isempty(node.left) || ~isempty(node.right)%inner node
     learnmaptree_c(node.left, pixval);
     learnmaptree_c(node.right, pixval);
 end
-im1 = pixval(4:6, node.data)';%low quality image
-im2 = pixval(1:3, node.data)';%high quality image
-[node.other.A, node.other.b] = learnColorMaping(im1, im2);
+if isempty(node.left) && isempty(node.right)%leaf node
+    im1 = pixval(4:6, node.data)';%low quality image
+    im2 = pixval(1:3, node.data)';%high quality image
+    [node.other.A, node.other.b] = learnColorMaping(im1, im2);
+end
 
 end
 

@@ -55,18 +55,16 @@ newftmap = ftmap(:, pixselected);
 %dealing with matrix elements
 root = BinTreeNode();
 root.data = 1:wdim_max;
-gweight = zeros(wdim_max, wdim_max);
+% gweight = zeros(wdim_max, wdim_max);
 display('getting weight matrix');
-tic
-for c = 1:wdim_max
-    gweight(c,c:end) = sqrt(sum(bsxfun(@minus, newftmap(1:28,c:end), newftmap(1:28,c)).^2)/ftnum);
-end
-gweight = gweight + gweight';
-toc
+% tic
+% % gweight = SimGraph_NearestNeighbors(newftmap(1:28, :),20, 1, 1); 
+% gweight = SimGraph_Full(newftmap(1:28, :), 200); 
+% toc
 
 display('building tree');
 tic
-buildTree(root, newftmap(1:28,:), gweight, 'color');
+buildTree(root, newftmap(1:28,:), 'color');
 toc
 
 display('learning mapping');
@@ -74,5 +72,6 @@ tic
 learnmaptree_c(root, newftmap(26:31,:));
 toc
 %clear all big variables, left only tree root and save root
-clearvars -except root;
+clearvars -except root newftmap;
 save root.mat root;
+save newftmap.mat newftmap;

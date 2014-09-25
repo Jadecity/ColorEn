@@ -43,24 +43,23 @@ for n=-3:3
     end
 end
 toc
-lrange = 100;
-abrange = 200;
-casimg2.l = power(casimg.l, 2);
-casimg2.a = power(casimg.a, 2);
-casimg2.b = power(casimg.b, 2);
+
+casimg2.l = casimg.l.^2;
+casimg2.a = casimg.a.^2;
+casimg2.b = casimg.b.^2;
 casimg3.l = casimg2.l.*casimg.l;
 casimg3.a = casimg2.a.*casimg.a;
 casimg3.b = casimg2.b.*casimg.b;
-
-ncasimg2.l =  mean( casimg2.l, 3 )/lrange^2;
-ncasimg2.a =  mean( casimg2.a, 3 )/abrange^2;
-ncasimg2.b =  mean( casimg2.b, 3 )/abrange^2;
-ncasimg3.l =  mean( casimg3.l, 3 )/lrange^3;
-ncasimg3.a =  mean( casimg3.a, 3 )/abrange^3;
-ncasimg3.b =  mean( casimg3.b, 3 )/abrange^3;
-ncasimg.l = mean( casimg.l, 3 )/lrange; 
-ncasimg.a = mean( casimg.a, 3 )/abrange;
-ncasimg.b = mean( casimg.b, 3 )/abrange;
+%power and normalize data
+ncasimg2.l = mat2gray(mean( casimg2.l, 3 ));
+ncasimg2.a = mat2gray(mean( casimg2.a, 3 ));
+ncasimg2.b = mat2gray(mean( casimg2.b, 3 ));
+ncasimg3.l = mat2gray(mean( casimg3.l, 3 ));
+ncasimg3.a = mat2gray(mean( casimg3.a, 3 ));
+ncasimg3.b = mat2gray(mean( casimg3.b, 3 ));
+ncasimg.l  = mat2gray(mean( casimg.l, 3 )); 
+ncasimg.a  = mat2gray(mean( casimg.a, 3 ));
+ncasimg.b  = mat2gray(mean( casimg.b, 3 ));
 
 
 fvec(1:9,:) = reshape(cat(3,ncasimg.l, ncasimg2.l,ncasimg3.l,...
@@ -69,12 +68,12 @@ fvec(1:9,:) = reshape(cat(3,ncasimg.l, ncasimg2.l,ncasimg3.l,...
 				), [rows*cols, 9])';
 fvec(10:15, :) = reshape(cat(3, gx.l, gy.l, gx.a, gy.a, gx.b, gy.b...
 				), [rows*cols, 6])';
-cnt = 1;              
+cnt = 1;
 % for idx = 1:rows*cols
 
 for m = -1:1
     for n=-1:1
-    %get correlation matrix feature, using cosine distance
+    %get correlation matrix feature, using Eul distance
     if m==0 && n==0
         continue;
     end
