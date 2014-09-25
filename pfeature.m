@@ -11,7 +11,7 @@ function [ fvec ] = pfeature( dataset,  gx, gy )
 %   created   2014-08-14 
 
 %get the first three moments of a 7-by-7 window
-fdim = 23;
+fdim = 15;
 winsz = 7;
 [rows, cols, ~] = size(dataset);
 fvec = zeros(fdim, rows*cols );
@@ -71,17 +71,18 @@ fvec(10:15, :) = reshape(cat(3, gx.l, gy.l, gx.a, gy.a, gx.b, gy.b...
 cnt = 1;
 % for idx = 1:rows*cols
 
-for m = -1:1
-    for n=-1:1
-    %get correlation matrix feature, using Eul distance
-    if m==0 && n==0
-        continue;
-    end
-    dist = sqrt(sum((dataset-imgPadded(4+m:3+m+rows, 4+n:3+n+cols,:)).^2, 3)/3);
-    fvec(15+cnt, :) = dist(:);
-    cnt = cnt + 1;
-    end
-end
+% cut 8 dimension when its meaning unkown
+% for m = -1:1
+%     for n=-1:1
+%     %get correlation matrix feature, using Eul distance
+%     if m==0 && n==0
+%         continue;
+%     end
+%     dist = sqrt(sum((dataset-imgPadded(4+m:3+m+rows, 4+n:3+n+cols,:)).^2, 3)/3);
+%     fvec(15+cnt, :) = dist(:);
+%     cnt = cnt + 1;
+%     end
+% end
 
 end
 

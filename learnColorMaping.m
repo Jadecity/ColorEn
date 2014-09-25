@@ -10,7 +10,6 @@ function [ A, b ] = learnColorMaping( im1, im2 )
 Q = zeros(rows, 10);
 C = zeros(rows, 3);
 
-row = 1;
 for r = 1:rows
     l = im1(r,1);
     a = im1(r,2);

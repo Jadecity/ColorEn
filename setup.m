@@ -2,4 +2,5 @@
 addpath(genpath('sfikasLibrary-GMM'));
 addpath(genpath('spectralClustering'));
 addpath(genpath('svmmatlab'));
+addpath(genpath('optprop'));
 addpath(genpath('res'));

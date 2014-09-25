@@ -8,13 +8,12 @@ clear all;
 
 trainImgFolder = 'res/images/training';
 imgnum = 7;
-ftnum = 31;
+ftnum = 23;
 wdim_max = 20000;
 
 display('start building feature map');
 tic
 %for each image pair, get feature
-colorTransform = makecform('srgb2lab');
 for num = 1:imgnum
     %read in images
     imLname = strcat(trainImgFolder, '/',num2str(num),'_LD.jpg');
@@ -23,8 +22,8 @@ for num = 1:imgnum
     imH = imread(imHname);
     [rownum, colnum, ~] = size(imL);
     %do color space stransform
-    imL_lab = applycform(im2double(imL), colorTransform);
-    imH_lab = applycform(im2double(imH), colorTransform);
+    imL_lab = rgb2lab(imL, 'srgb', 'D65/10');
+    imH_lab = rgb2lab(imH, 'srgb', 'D65/10');
     imL_2dim = reshape(imL_lab, rownum*colnum, 3);
     imH_2dim = reshape(imH_lab, rownum*colnum, 3);
     
@@ -38,12 +37,12 @@ for num = 1:imgnum
     
     region = (num-1)*rownum*colnum+1:num*rownum*colnum;
     ftmap_first = pfeature(imL_lab, gLx, gLy);
-    ftmap(1:23, region) = ftmap_first;
-    ftmap(24, region) = gHx.l(:);
-    ftmap(25, region) = gHy.l(:);
-    ftmap(26:28, region) = imH_2dim';
+    ftmap(1:15, region) = ftmap_first;
+    ftmap(16, region) = gHx.l(:);
+    ftmap(17, region) = gHy.l(:);
+    ftmap(18:20, region) = imH_2dim';
     %not part of feature, only to embed pixel information
-    ftmap(29:31, region) = imL_2dim';
+    ftmap(21:23, region) = imL_2dim';
     clear ftmap_first;
 end
 toc
@@ -64,12 +63,12 @@ display('getting weight matrix');
 
 display('building tree');
 tic
-buildTree(root, newftmap(1:28,:), 'color');
+buildTree(root, newftmap(1:20,:), 'color');
 toc
 
 display('learning mapping');
 tic
-learnmaptree_c(root, newftmap(26:31,:));
+learnmaptree_c(root, newftmap(18:23,:));
 toc
 %clear all big variables, left only tree root and save root
 clearvars -except root newftmap;

@@ -10,6 +10,8 @@ if isempty(inf)
 end
 if isempty(root.left) && isempty(root.right)
     inf.leaf = inf.leaf + 1;
+    root.other.A
+    root.other.b
 else
     inf.inode = inf.inode + 1;
     treeInfo(root.left);
