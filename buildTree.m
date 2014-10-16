@@ -16,7 +16,7 @@ if strcmp(maptype, 'luminance')
     loop = 200;
 end
 
-gweight = squareform(pdist(ftspace'));
+%gweight = squareform(pdist(ftspace'));
 for cnt=1:loop
     display(sprintf('itr: %d',cnt));
     tic
@@ -33,8 +33,8 @@ for cnt=1:loop
     if size(least.data, 2) < 10
         continue;
     end
-    weight = gweight(least.data, least.data);
-    %weight = SimGraph_Full(ftspace(:, least.data), 100);
+    %weight = gweight(least.data, least.data);
+    weight = SimGraph_Full(ftspace(:, least.data), 100);
 %     [c1, c2] = minmaxcut(weight);
     Cluster = SpectralClustering(weight, 2, 3);
     Cluster = logical(Cluster);

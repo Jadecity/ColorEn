@@ -16,8 +16,8 @@ if ~isempty(node.left) || ~isempty(node.right)%inner node
     learnmaptree_c(node.right, pixval);
 end
 if isempty(node.left) && isempty(node.right)%leaf node
-    im1 = pixval(4:6, node.data)';%low quality image
-    im2 = pixval(1:3, node.data)';%high quality image
+    im1 = pixval(4:6, node.data);%low quality image
+    im2 = pixval(1:3, node.data);%high quality image
     [node.other.A, node.other.b] = learnColorMaping(im1, im2);
 end
 

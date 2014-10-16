@@ -11,7 +11,7 @@ function [ fvec ] = pfeature( dataset,  gx, gy )
 %   created   2014-08-14 
 
 %get the first three moments of a 7-by-7 window
-fdim = 15;
+fdim = 20;
 winsz = 7;
 [rows, cols, ~] = size(dataset);
 fvec = zeros(fdim, rows*cols );
@@ -44,22 +44,16 @@ for n=-3:3
 end
 toc
 
-casimg2.l = casimg.l.^2;
-casimg2.a = casimg.a.^2;
-casimg2.b = casimg.b.^2;
-casimg3.l = casimg2.l.*casimg.l;
-casimg3.a = casimg2.a.*casimg.a;
-casimg3.b = casimg2.b.*casimg.b;
 %power and normalize data
-ncasimg2.l = mat2gray(mean( casimg2.l, 3 ));
-ncasimg2.a = mat2gray(mean( casimg2.a, 3 ));
-ncasimg2.b = mat2gray(mean( casimg2.b, 3 ));
-ncasimg3.l = mat2gray(mean( casimg3.l, 3 ));
-ncasimg3.a = mat2gray(mean( casimg3.a, 3 ));
-ncasimg3.b = mat2gray(mean( casimg3.b, 3 ));
-ncasimg.l  = mat2gray(mean( casimg.l, 3 )); 
-ncasimg.a  = mat2gray(mean( casimg.a, 3 ));
-ncasimg.b  = mat2gray(mean( casimg.b, 3 ));
+ncasimg2.l = std( casimg.l, 1, 3 );
+ncasimg2.a = std( casimg.a, 1, 3 );
+ncasimg2.b = std( casimg.b, 1, 3 );
+ncasimg3.l = skewness_coloren( casimg.l, 1, 3 );
+ncasimg3.a = skewness_coloren( casimg.a, 1, 3 );
+ncasimg3.b = skewness_coloren( casimg.b, 1, 3 );
+ncasimg.l  = mean( casimg.l, 3 );
+ncasimg.a  = mean( casimg.a, 3 );
+ncasimg.b  = mean( casimg.b, 3 );
 
 
 fvec(1:9,:) = reshape(cat(3,ncasimg.l, ncasimg2.l,ncasimg3.l,...
@@ -69,20 +63,14 @@ fvec(1:9,:) = reshape(cat(3,ncasimg.l, ncasimg2.l,ncasimg3.l,...
 fvec(10:15, :) = reshape(cat(3, gx.l, gy.l, gx.a, gy.a, gx.b, gy.b...
 				), [rows*cols, 6])';
 cnt = 1;
-% for idx = 1:rows*cols
 
-% cut 8 dimension when its meaning unkown
-% for m = -1:1
-%     for n=-1:1
-%     %get correlation matrix feature, using Eul distance
-%     if m==0 && n==0
-%         continue;
-%     end
-%     dist = sqrt(sum((dataset-imgPadded(4+m:3+m+rows, 4+n:3+n+cols,:)).^2, 3)/3);
-%     fvec(15+cnt, :) = dist(:);
-%     cnt = cnt + 1;
-%     end
-% end
+dist = cat(3, imgPadded(3:2+rows, 3:2+cols,:), imgPadded(3:2+rows, 5:4+cols,:)...
+                ,imgPadded(5:4+rows, 3:2+cols,:), imgPadded(5:4+rows, 5:4+cols,:));
+dist2 = reshape(dist, [rows*cols, 12])';
+corrcell = cellfun(@colorCorrMat, num2cell(dist2, 1), 'UniformOutput', false);
+corrmat = cell2mat(corrcell);
+fvec(15:20, :) = corrmat;
+
 
 end
 
