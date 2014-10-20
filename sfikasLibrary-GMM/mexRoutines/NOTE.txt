@@ -1,5 +1,0 @@
-NOTE:
-
-If I precede a file by an "x", it means this is the original MATLAB code version.
-For example xBIDProjection is the original version,
-and BIDProjection calls the MEX version.
