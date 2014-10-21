@@ -46,27 +46,10 @@ l = img_2dim(1,:);
 a = img_2dim(2,:);
 b = img_2dim(3,:);
 Qi = cat(1,l.^2,a.^2,b.^2,l.*a,l.*b,a.*b,l,a,b);
-for k=1:K
-    kimgs{k} = img_2dim;
-    %first vote for mappings
-    selected = find(segs{k} >= 0.5)';
-    hist = zeros( size(leafs) );
-    for p=selected
-        ft = ftmap( :, p );
-        lfnode = ftclassify( ft, root );
-        hist( lfnode.other.idx ) = hist( lfnode.other.idx ) + 1;
-    end
-    hist = hist/sum(hist);
-    [sorted, ind] = sort( hist, 'descend' );
-    %then for each selected pixel, do mapping
-    if ~isempty(selected)
-        kimgs{k}(:, selected) = sorted(1)*( bsxfun(@plus,leafs(ind(1)).other.A*Qi(:,selected), leafs(ind(1)).other.b') )+...
-        sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi(:, selected), leafs(ind(2)).other.b' ) )+...
-        sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi(:, selected), leafs(ind(3)).other.b' ) );
-    end
-
-    %merge K images to one
-    img_final(:,:) = img_final + repmat(segs{k}(:)', 3, 1).*kimgs{k}; 
+for p=1:rownum*colnum
+ft = ftmap( :, p );
+lfnode = ftclassify( ft, root );
+img_final(:,p) = bsxfun(@plus,Qi(:,p)'*lfnode.other.A', lfnode.other.b);
 end
 
 img_final = reshape(img_final', rownum, colnum, 3);

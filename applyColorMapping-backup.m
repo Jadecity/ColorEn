@@ -30,13 +30,6 @@ ftmap(21, :) = gx.l(:);
 ftmap(22, :) = gy.l(:);
 ftmap(23:25, :) = reshape(img_lab, rownum*colnum, 3)';
 
-%soft segmented image
-K = 8;
-[ L, modelparams ] = buildSegmentation( img, 'gmm', K );
-% rgb = label2rgb(L);
-% imshow(rgb);
-sfimg = modelparams.z;
-
 %build a histogram for all leaf node
 leafs = buildLeafArray( root,[],[] );
 
