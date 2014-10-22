@@ -51,6 +51,8 @@ for cnt=1:loop
     right.other.sim = avgsim(size(c2,1), gweight(right.data, right.data));
     left.other.weight = sum(sum(gweight(left.data, left.data)));
     right.other.weight = sum(sum(gweight(right.data, right.data)));
+    left.other.depth = least.other.depth + 1;
+    right.other.depth = left.other.depth;
     least.left = left;
     least.right = right;
     

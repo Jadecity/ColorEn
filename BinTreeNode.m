@@ -23,6 +23,7 @@ classdef BinTreeNode < handle
             obj.left = [];
             obj.other = [];
             obj.other.toosmall=false;
+            obj.other.depth = 0;
         end
     end
     
