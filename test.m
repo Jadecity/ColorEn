@@ -1,4 +1,4 @@
-load roots/root.mat;
+load roots/root-mx2-mx3.mat;
 trainImgFolder = 'res/images/training3';
 %imL = imread(strcat(trainImgFolder , '/mx-8-2.jpg'));
 %tic
