@@ -32,6 +32,7 @@ ftmap(23:25, :) = reshape(img_lab, rownum*colnum, 3)';
 
 %build a histogram for all leaf node
 leafs = buildLeafArray( root,[],[] );
+leafsz = numel(leafs);
 
 %init final color enhanced image
 K = 5;
@@ -48,15 +49,25 @@ a = img_2dim(2,:);
 b = img_2dim(3,:);
 Qi = cat(1,l.^2,a.^2,b.^2,l.*a,l.*b,a.*b,l,a,b);
 for k=1:K
+    
+    %clear root data items
+    for p=1:leafsz
+        leafs(p).data = [];    
+    end
+    
     kimgs{k} = img_2dim;
     %first vote for mappings
     selected = find(segs{k} >= 0.5)';
     hist = zeros( size(leafs) );
-    for p=selected
-        ft = ftmap( :, p );
-        lfnode = ftclassify( ft, root );
-        hist( lfnode.other.idx ) = hist( lfnode.other.idx ) + 1;
+    
+    root.data = selected;
+    ftclassify2( ftmap, root );
+    for p=1:leafsz
+        if ~isempty( leafs(p).data )
+            hist( leafs(p).other.idx ) = hist( leafs(p).other.idx ) + 1;
+        end
     end
+    
     hist = hist/sum(hist);
     [sorted, ind] = sort( hist, 'descend' );
     %then for each selected pixel, do mapping
