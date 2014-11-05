@@ -2,4 +2,5 @@
 addpath(genpath('svmmatlab'));
 addpath(genpath('optprop'));
 addpath(genpath('res'));
+addpath(genpath('roots'));
 addpath(genpath('../InstantProp'));

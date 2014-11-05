@@ -40,6 +40,7 @@ kimgs = cell(1,K);
 
 %get soft segment
 segs = softseg(img_lab, K);
+save segs.mat segs
 
 %for each pix in current seg, do color mapping
 l = img_2dim(1,:);

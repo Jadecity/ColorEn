@@ -6,8 +6,8 @@
 clc;
 clear all;
 
-trainImgFolder = 'res/images/training2';
-imgnum = 5;
+trainImgFolder = 'res/images/training3';
+imgnum = 7;
 %ftnum = 31;
 wdim_max = 20000;
 
@@ -19,8 +19,8 @@ if ~exist('ftmap.mat', 'file')
     cnt=1;
     for num = 1:imgnum
         %read in images
-        imLname = strcat(trainImgFolder, '/',num2str(num),'_HD.jpg');
-        imHname = strcat(trainImgFolder, '/',num2str(num),'_HD2.jpg');
+        imLname = strcat(trainImgFolder, '/mx-',num2str(num),'-2.jpg');
+        imHname = strcat(trainImgFolder, '/mx-',num2str(num),'-reg2-3.jpg');
         imL = imread(imLname);
         imH = imread(imHname);
         [rownum, colnum, ~] = size(imL);
@@ -79,5 +79,5 @@ learnmaptree_c(root, newftmap(23:28,:));
 toc
 %clear all big variables, left only tree root and save root
 clearvars -except root newftmap;
-save root.mat root;
+save roots\root-mx2-mx3.mat root;
 save newftmap.mat newftmap;
