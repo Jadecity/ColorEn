@@ -49,36 +49,36 @@ a = img_2dim(2,:);
 b = img_2dim(3,:);
 Qi = cat(1,l.^2,a.^2,b.^2,l.*a,l.*b,a.*b,l,a,b);
 for k=1:K
-    
+    kimgs{k} = zeros(3, rownum*colnum);
     %clear root data items
     for p=1:leafsz
         leafs(p).data = [];    
-    end
+    end    
     
-    kimgs{k} = img_2dim;
     %first vote for mappings
     selected = find(segs{k} >= 0.5)';
-    hist = zeros( size(leafs) );
-    
-    root.data = selected;
-    ftclassify2( ftmap, root );
-    for p=1:leafsz
-        if ~isempty( leafs(p).data )
-            hist( leafs(p).other.idx ) = hist( leafs(p).other.idx ) + 1;
-        end
-    end
-    
-    hist = hist/sum(hist);
-    [sorted, ind] = sort( hist, 'descend' );
-    %then for each selected pixel, do mapping
     if ~isempty(selected)
-        kimgs{k}(:, selected) = sorted(1)*( bsxfun(@plus,leafs(ind(1)).other.A*Qi(:,selected), leafs(ind(1)).other.b') )+...
-        sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi(:, selected), leafs(ind(2)).other.b' ) )+...
-        sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi(:, selected), leafs(ind(3)).other.b' ) );
+        hist = zeros( size(leafs) );
+
+        root.data = selected;
+        ftclassify2( ftmap, root );
+        for p=1:leafsz
+            hist( p ) = numel( leafs(p).data );
+        end
+
+        hist = hist/sum(hist);
+        [sorted, ind] = sort( hist, 'descend' );
+                
+        %then for all pixels, do mapping
+        kimgs{k} = sorted(1)*( bsxfun(@plus,leafs(ind(1)).other.A*Qi, leafs(ind(1)).other.b') )+...
+        sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi, leafs(ind(2)).other.b' ) )+...
+            sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi, ...
+                               leafs(ind(3)).other.b' ) );
     end
+    
 
     %merge K images to one
-    img_final(:,:) = img_final + repmat(segs{k}(:)', 3, 1).*kimgs{k}; 
+    img_final = img_final + repmat(segs{k}(:)', 3, 1).*kimgs{k}; 
 end
 
 img_final = reshape(img_final', rownum, colnum, 3);

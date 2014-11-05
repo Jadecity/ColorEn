@@ -13,11 +13,12 @@ if ~isempty( curnode.left ) && ~isempty( curnode.right ) && ...
     %not leaf and have data to classify
     ft2 = ft(:, curnode.data);
     label = svmpredict( ones(size(ft2, 2), 1), ft2', curnode.other.svm);
-    curnode.left.data = root.data(logical(~label)); % 0 to left
-    curnode.right.data = root.data( logical( label ) ); % 1 to right
+    curnode.left.data = root.data( ~logical(label) ); % 0 to right
+    curnode.right.data = root.data( logical(label) ); % 1 to left
     
     ftclassify2( ft, curnode.left );
     ftclassify2( ft, curnode.right );
+
 end
 
 end
