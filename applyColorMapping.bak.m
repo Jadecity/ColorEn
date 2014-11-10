@@ -9,15 +9,13 @@ function img_final = applyColorMapping( img, root )
 %   Email: lvhaoexp@163.com
 %   Date : 2014-09-03
 
-usesoft = false;
+usesoft = true;
 %convert img to Lab color space
 [ rownum, colnum, ~ ] = size( img );
-img_lab = rgb2lab(img);
+img_lab = rgb2lab(img, 'srgb', 'D65/10');
 
 %do normalization
 img_lab = img_lab/100;
-lumavg = mean2(img_lab(:,:,1));
-img_lab(:,:,1) = img_lab(:,:,1)*0.65/lumavg;
 img_2dim = reshape(img_lab, rownum*colnum, 3)';
 
 %generate gradient map
@@ -112,10 +110,6 @@ if usesoft
             sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi(:,selected), leafs(ind(2)).other.b' ) )+...
                 sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi(:,selected), ...
                                    leafs(ind(3)).other.b' ) );
-% $$$             kimgs{k}(:,:) = sorted(1)*( bsxfun(@plus,leafs(ind(1)).other.A*Qi(:,:), leafs(ind(1)).other.b') )+...
-% $$$             sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi(:,:), leafs(ind(2)).other.b' ) )+...
-% $$$                 sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi(:,:), ...
-% $$$                                    leafs(ind(3)).other.b' ) );
         end
 
         %merge K images to one
@@ -140,6 +134,6 @@ end
 
 img_final = reshape(img_final', rownum, colnum, 3);
 %do normalization back
-img_final(:,:,1) = img_final(:,:,1)*lumavg/0.65;
 img_final = img_final*100;
+
 img_final = lab2rgb(img_final);

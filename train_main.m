@@ -6,10 +6,18 @@
 clc;
 clear all;
 
-trainImgFolder = 'res/images/training3';
-imgnum = 7;
-%ftnum = 31;
-wdim_max = 20000;
+trainImgFolder = 'res/images/training2';
+imgnum = 1;
+ftnum = 15;
+wdim_max = 40000;
+
+%init gradient kernel
+sobelHE = [-0.25 -0.5 -0.25;
+           0 0 0;
+           0.25 0.5 0.25];
+sobelVE = [0.25 0 -0.25;
+           0.5 0 -0.5;
+           0.25 0 -0.25];
 
 
 if ~exist('ftmap.mat', 'file')
@@ -19,33 +27,77 @@ if ~exist('ftmap.mat', 'file')
     cnt=1;
     for num = 1:imgnum
         %read in images
-        imLname = strcat(trainImgFolder, '/mx-',num2str(num),'-2.jpg');
-        imHname = strcat(trainImgFolder, '/mx-',num2str(num),'-reg2-3.jpg');
+        imLname = strcat(trainImgFolder, '/',num2str(num),'_HD.jpg');
+        imHname = strcat(trainImgFolder, '/',num2str(num),'_HD2.jpg');
         imL = imread(imLname);
         imH = imread(imHname);
         [rownum, colnum, ~] = size(imL);
         %do color space stransform
         imL_lab = rgb2lab(imL);
         imH_lab = rgb2lab(imH);
+        %do normalization
+        imL_lab = imL_lab/100;
+        imH_lab = imH_lab/100;
+        lumavg_L = mean2( imL_lab(:,:,1) );
+        lumavg_H = mean2( imH_lab(:,:,1) );
+        imL_lab(:,:,1) = imL_lab(:,:,1)*0.65/lumavg_L;
+        imH_lab(:,:,1) = imH_lab(:,:,1)*0.65/lumavg_H;
         imL_2dim = reshape(imL_lab, rownum*colnum, 3);
         imH_2dim = reshape(imH_lab, rownum*colnum, 3);
-
+            
         %create gradient map
-        [gLx.l, gLy.l] = gradient(imL_lab(:,:,1));
-        [gLx.a, gLy.a] = gradient(imL_lab(:,:,2));
-        [gLx.b, gLy.b] = gradient(imL_lab(:,:,3));
-        [gHx.l, gHy.l] = gradient(imH_lab(:,:,1));
-        [gHx.a, gHy.a] = gradient(imH_lab(:,:,2));
-        [gHx.b, gHy.b] = gradient(imH_lab(:,:,3));
+        %pad image with symmetric method along edges
+        imgpadded_L = zeros(rownum+2, colnum+2, 3);
+        imgpadded_L(2:rownum+1, 2:colnum+1, :) = imL_lab;
+        imgpadded_L([1,end],2:colnum+1, :) = imL_lab([2,end-1], :, :);
+        imgpadded_L(2:rownum+1,[1,end], :) = imL_lab(:, [2,end-1], :);
+        imgpadded_L(1,1, :) = imL_lab(2,2, :);
+        imgpadded_L(end,end, :) = imL_lab(end-1, end-1, :);
+        imgpadded_L(1,end,:) = imL_lab(2, end-1, :);
+        imgpadded_L(end,1,:) = imL_lab(end-1, 2, :);
+        
+        imgpadded_H = zeros(rownum+2, colnum+2, 3);
+        imgpadded_H(2:rownum+1, 2:colnum+1, :) = imH_lab;
+        imgpadded_H([1,end],2:colnum+1, :) = imH_lab([2,end-1], :, :);
+        imgpadded_H(2:rownum+1,[1,end], :) = imH_lab(:, [2,end-1], :);
+        imgpadded_H(1,1, :) = imH_lab(2,2, :);
+        imgpadded_H(end,end, :) = imH_lab(end-1, end-1, :);
+        imgpadded_H(1,end,:) = imH_lab(2, end-1, :);
+        imgpadded_H(end,1,:) = imH_lab(end-1, 2, :);
 
+        gLx.l = conv2( imgpadded_L(:,:,1), sobelVE, 'same');
+        gLy.l = conv2( imgpadded_L(:,:,1), sobelHE, 'same');
+        gLx.a = conv2( imgpadded_L(:,:,2), sobelVE, 'same');
+        gLy.a = conv2( imgpadded_L(:,:,2), sobelHE, 'same');
+        gLx.b = conv2( imgpadded_L(:,:,3), sobelVE, 'same');
+        gLy.b = conv2( imgpadded_L(:,:,3), sobelHE, 'same');
+        gHx.l = conv2( imgpadded_H(:,:,1), sobelVE, 'same');
+        gHy.l = conv2( imgpadded_H(:,:,1), sobelHE, 'same');
+        gHx.a = conv2( imgpadded_H(:,:,2), sobelVE, 'same');
+        gHy.a = conv2( imgpadded_H(:,:,2), sobelHE, 'same');
+        gHx.b = conv2( imgpadded_H(:,:,3), sobelVE, 'same');
+        gHy.b = conv2( imgpadded_H(:,:,3), sobelHE, 'same');
+        gLx.l = gLx.l(2:rownum+1, 2:colnum+1);
+        gLy.l = gLy.l(2:rownum+1, 2:colnum+1);
+        gLx.a = gLx.a(2:rownum+1, 2:colnum+1);
+        gLy.a = gLy.a(2:rownum+1, 2:colnum+1);
+        gLx.b = gLx.b(2:rownum+1, 2:colnum+1);
+        gLy.b = gLy.b(2:rownum+1, 2:colnum+1);
+        gHx.l = gHx.l(2:rownum+1, 2:colnum+1);
+        gHy.l = gHy.l(2:rownum+1, 2:colnum+1);
+        gHx.a = gHx.a(2:rownum+1, 2:colnum+1);
+        gHy.a = gHy.a(2:rownum+1, 2:colnum+1);
+        gHx.b = gHx.b(2:rownum+1, 2:colnum+1);
+        gHy.b = gHy.b(2:rownum+1, 2:colnum+1);
+        
         region = (cnt-1)*rownum*colnum+1:cnt*rownum*colnum;
         ftmap_first = pfeature(imL_lab, gLx, gLy);
-        ftmap(1:20, region) = ftmap_first;
-        ftmap(21, region) = gHx.l(:);
-        ftmap(22, region) = gHy.l(:);
-        ftmap(23:25, region) = imH_2dim';
+        ftmap(1:ftnum, region) = ftmap_first;
+        ftmap(ftnum+1, region) = gHx.l(:);
+        ftmap(ftnum+2, region) = gHy.l(:);
+        ftmap(ftnum+3:ftnum+5, region) = imH_2dim';
         %not part of feature, only to embed pixel information
-        ftmap(26:28, region) = imL_2dim';
+        ftmap(ftnum+6:ftnum+8, region) = imL_2dim';
         cnt = cnt + 1;
         clear ftmap_first;
     end
@@ -60,7 +112,9 @@ end
 [~, c] = find(isnan(ftmap));
 ftmap(:,c) = [];%remove all columns containing Nan
 ftmap(:, all(ftmap==0,1)) = [];%remove all zeros columns
-pixselected = randperm(size(ftmap,2), wdim_max);
+                               %pixselected =
+                               %randperm(size(ftmap,2), wdim_max);
+pixselected = 1:wdim_max;
 newftmap = ftmap(:, pixselected);
 
 %train mapping tree, point is numbered by the same rule with matlab when 
@@ -70,14 +124,14 @@ root.data = 1:wdim_max;
 
 display('building tree');
 tic
-buildTree(root, newftmap(1:25,:), 'color');
+buildTree(root, newftmap(1:ftnum+5,:), 'color');
 toc
 
 display('learning mapping');
 tic
-learnmaptree_c(root, newftmap(23:28,:));
+learnmaptree_c(root, newftmap(end-5:end,:));
 toc
 %clear all big variables, left only tree root and save root
 clearvars -except root newftmap;
-save roots\root-mx2-mx3.mat root;
+save roots/root.2.mat root;
 save newftmap.mat newftmap;

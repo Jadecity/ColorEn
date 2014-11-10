@@ -11,7 +11,7 @@ function [ fvec ] = pfeature( dataset,  gx, gy )
 %   created   2014-08-14 
 
 %get the first three moments of a 7-by-7 window
-fdim = 20;
+fdim = 15;
 winsz = 7;
 [rows, cols, ~] = size(dataset);
 fvec = zeros(fdim, rows*cols );
@@ -64,12 +64,13 @@ fvec(10:15, :) = reshape(cat(3, gx.l, gy.l, gx.a, gy.a, gx.b, gy.b...
 				), [rows*cols, 6])';
 cnt = 1;
 
-dist = cat(3, imgPadded(3:2+rows, 3:2+cols,:), imgPadded(3:2+rows, 5:4+cols,:)...
-                ,imgPadded(5:4+rows, 3:2+cols,:), imgPadded(5:4+rows, 5:4+cols,:));
-dist2 = reshape(dist, [rows*cols, 12])';
-corrcell = cellfun(@colorCorrMat, num2cell(dist2, 1), 'UniformOutput', false);
-corrmat = cell2mat(corrcell);
-fvec(15:20, :) = corrmat;
+% $$$ 
+% $$$ dist = cat(3, imgPadded(3:2+rows, 3:2+cols,:), imgPadded(3:2+rows, 5:4+cols,:)...
+% $$$                 ,imgPadded(5:4+rows, 3:2+cols,:), imgPadded(5:4+rows, 5:4+cols,:));
+% $$$ dist2 = reshape(dist, [rows*cols, 12])';
+% $$$ corrcell = cellfun(@colorCorrMat, num2cell(dist2, 1), 'UniformOutput', false);
+% $$$ corrmat = cell2mat(corrcell);
+% $$$ fvec(16:21, :) = corrmat;
 
 
 end
