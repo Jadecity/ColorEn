@@ -9,7 +9,7 @@ function img_final = applyColorMapping( img, root )
 %   Email: lvhaoexp@163.com
 %   Date : 2014-09-03
 
-usesoft = false;
+usesoft = true;
 %convert img to Lab color space
 [ rownum, colnum, ~ ] = size( img );
 img_lab = rgb2lab(img);
@@ -51,11 +51,6 @@ gy.a = gy.a(2:rownum+1, 2:colnum+1);
 gx.b = gx.b(2:rownum+1, 2:colnum+1);
 gy.b = gy.b(2:rownum+1, 2:colnum+1);
 
-[gx.l, gy.l] = gradient(img_lab(:,:,1));
-[gx.a, gy.a] = gradient(img_lab(:,:,2));
-[gx.b, gy.b] = gradient(img_lab(:,:,3));
-
-
 %extract feature map
 ftnum = 15;
 ftmap = zeros(ftnum+5, rownum*colnum);
@@ -92,7 +87,7 @@ if usesoft
         end    
 
         %first vote for mappings
-        selected = find(segs{k} >= 0.5)'
+        selected = find(segs{k} >= 0.5)';
         if ~isempty(selected)
             hist = zeros( size(leafs) );
 
@@ -108,14 +103,15 @@ if usesoft
             sorted(1:3) = sorted(1:3)/sum(sorted(1:3));
             save(strcat(num2str(k),'sorted.mat'), 'sorted');
             %then for selected pixels, do mapping
-            kimgs{k}(:,selected) = sorted(1)*( bsxfun(@plus,leafs(ind(1)).other.A*Qi(:,selected), leafs(ind(1)).other.b') )+...
-            sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi(:,selected), leafs(ind(2)).other.b' ) )+...
-                sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi(:,selected), ...
-                                   leafs(ind(3)).other.b' ) );
-% $$$             kimgs{k}(:,:) = sorted(1)*( bsxfun(@plus,leafs(ind(1)).other.A*Qi(:,:), leafs(ind(1)).other.b') )+...
-% $$$             sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi(:,:), leafs(ind(2)).other.b' ) )+...
-% $$$                 sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi(:,:), ...
+% $$$             kimgs{k}(:,selected) = sorted(1)*( bsxfun(@plus,leafs(ind(1)).other.A*Qi(:,selected), leafs(ind(1)).other.b') )+...
+% $$$             sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi(:,selected), leafs(ind(2)).other.b' ) )+...
+% $$$                 sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi(:,selected), ...
 % $$$                                    leafs(ind(3)).other.b' ) );
+%           it proves that this method works fine
+            kimgs{k}(:,:) = sorted(1)*( bsxfun(@plus,leafs(ind(1)).other.A*Qi(:,:), leafs(ind(1)).other.b') )+...
+            sorted(2)*( bsxfun(@plus,leafs(ind(2)).other.A*Qi(:,:), leafs(ind(2)).other.b' ) )+...
+                sorted(3)*( bsxfun(@plus,leafs(ind(3)).other.A*Qi(:,:), ...
+                                   leafs(ind(3)).other.b' ) );
         end
 
         %merge K images to one

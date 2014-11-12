@@ -1,10 +1,10 @@
-load roots/root.mat;
+load roots/root.2.mat;
 trainImgFolder = 'res/images/training2';
-imL = imread(strcat(trainImgFolder , '/7_HD.jpg'));
+imL = imread(strcat(trainImgFolder , '/1_HD.jpg'));
 tic
 imfinal = applyColorMapping(imL, root);
 toc
-imwrite(imfinal, strcat(trainImgFolder, '/7-en.jpg'));
+imwrite(imfinal, strcat(trainImgFolder, '/1-en.jpg'));
 
 % $$$ imL = imread(strcat(trainImgFolder , '/8_HD.jpg'));
 % $$$ tic

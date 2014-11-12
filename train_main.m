@@ -9,7 +9,6 @@ clear all;
 trainImgFolder = 'res/images/training2';
 imgnum = 1;
 ftnum = 15;
-wdim_max = 40000;
 
 %init gradient kernel
 sobelHE = [-0.25 -0.5 -0.25;
@@ -24,7 +23,7 @@ if ~exist('ftmap.mat', 'file')
     display('start building feature map');
     tic
     %for each image pair, get feature
-    cnt=1;
+    region = [0];
     for num = 1:imgnum
         %read in images
         imLname = strcat(trainImgFolder, '/',num2str(num),'_HD.jpg');
@@ -90,7 +89,7 @@ if ~exist('ftmap.mat', 'file')
         gHx.b = gHx.b(2:rownum+1, 2:colnum+1);
         gHy.b = gHy.b(2:rownum+1, 2:colnum+1);
         
-        region = (cnt-1)*rownum*colnum+1:cnt*rownum*colnum;
+        region = (num-1)*rownum*colnum+1:num*rownum*colnum;
         ftmap_first = pfeature(imL_lab, gLx, gLy);
         ftmap(1:ftnum, region) = ftmap_first;
         ftmap(ftnum+1, region) = gHx.l(:);
@@ -98,7 +97,7 @@ if ~exist('ftmap.mat', 'file')
         ftmap(ftnum+3:ftnum+5, region) = imH_2dim';
         %not part of feature, only to embed pixel information
         ftmap(ftnum+6:ftnum+8, region) = imL_2dim';
-        cnt = cnt + 1;
+
         clear ftmap_first;
     end
     toc
@@ -108,19 +107,18 @@ else
     load ftmap.mat;
 end
 
-%pick 20000 points to train model
+%pick wdim_max points to train model
 [~, c] = find(isnan(ftmap));
 ftmap(:,c) = [];%remove all columns containing Nan
 ftmap(:, all(ftmap==0,1)) = [];%remove all zeros columns
-                               %pixselected =
-                               %randperm(size(ftmap,2), wdim_max);
-pixselected = 1:wdim_max;
-newftmap = ftmap(:, pixselected);
+% $$$ pixselected = randperm(size(ftmap,2), wdim_max);
+
+newftmap = ftmap;
 
 %train mapping tree, point is numbered by the same rule with matlab when 
 %dealing with matrix elements
 root = BinTreeNode();
-root.data = 1:wdim_max;
+root.data = 1:size(newftmap, 2);
 
 display('building tree');
 tic

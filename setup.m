@@ -4,4 +4,4 @@ addpath(genpath('optprop'));
 addpath(genpath('res'));
 addpath(genpath('roots'));
 addpath(genpath('../InstantProp'));
-addpath(genpath('spectral-clustering-matlab'));
+addpath(genpath('spectclustering'));
