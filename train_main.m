@@ -7,9 +7,9 @@ clc;
 clear all;
 
 trainImgFolder = 'res/images/training2';
-imgnum = 1;
+imgnum = 7;
 ftnum = 15;
-
+wdim_max = 20000;
 %init gradient kernel
 sobelHE = [-0.25 -0.5 -0.25;
            0 0 0;
@@ -18,8 +18,8 @@ sobelVE = [0.25 0 -0.25;
            0.5 0 -0.5;
            0.25 0 -0.25];
 
-
-if ~exist('ftmap.mat', 'file')
+ftselected = {};
+if ~exist('ftselected.mat', 'file')
     display('start building feature map');
     tic
     %for each image pair, get feature
@@ -97,23 +97,33 @@ if ~exist('ftmap.mat', 'file')
         ftmap(ftnum+3:ftnum+5, region) = imH_2dim';
         %not part of feature, only to embed pixel information
         ftmap(ftnum+6:ftnum+8, region) = imL_2dim';
-
-        clear ftmap_first;
+        
+        %do feature point selection
+        selepoints = selepix( imL, 500, 20000);
+        tmp = [];
+        for s=1:numel(selepoints)
+            tmp = union(tmp, selepoints{s});
+        end
+        ftselected{num} = ftmap(:, tmp+region(1)-1);
+        clear ftmap_first selepoints tmp;
     end
+    ftselected = cell2mat( ftselected );
     toc
     save ftmap.mat ftmap;
+    save ftselected.mat ftselected;
 else
     display('start loading feature map');
     load ftmap.mat;
+    load ftselected.mat;
 end
 
 %pick wdim_max points to train model
-[~, c] = find(isnan(ftmap));
-ftmap(:,c) = [];%remove all columns containing Nan
-ftmap(:, all(ftmap==0,1)) = [];%remove all zeros columns
+[~, c] = find(isnan(ftselected));
+ftselected(:,c) = [];%remove all columns containing Nan
+ftselected(:, all(ftselected==0,1)) = [];%remove all zeros columns
 % $$$ pixselected = randperm(size(ftmap,2), wdim_max);
 
-newftmap = ftmap;
+newftmap = ftselected;
 
 %train mapping tree, point is numbered by the same rule with matlab when 
 %dealing with matrix elements
@@ -130,6 +140,6 @@ tic
 learnmaptree_c(root, newftmap(end-5:end,:));
 toc
 %clear all big variables, left only tree root and save root
-clearvars -except root newftmap;
+clearvars -except root;
 save roots/root.2.mat root;
-save newftmap.mat newftmap;
+

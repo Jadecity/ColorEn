@@ -17,13 +17,18 @@ if strcmp(maptype, 'luminance')
     loop = 200;
 end
 
-%dist = 1./pdist(ftspace');
-%dist(all(dist==Inf, 1)) = 0;%replace Inf to 0
-%gweight = squareform(dist);
 ftdim = size(ftspace, 2);
-maxneibor = ceil(0.025*ftdim);
+maxneibor = 500;
+fullthres = 10000;
+blocksz = 10000;
 neibor = maxneibor;
-weight = SimGraph_NearestNeighbors( ftspace, neibor, 1,  1);
+if exist('100_NN_sym_distance.mat')
+    load('100_NN_sym_distance.mat', 'weight');
+else
+    weight = gen_nn_distance( ftspace', neibor, blocksz, 0);
+    save weight.all.mat weight;
+end
+
 root.other.sim = full( avgsim(size(root.data,2), weight) );
 realcnt = 0;
 for cnt=1:maxloop
@@ -48,18 +53,21 @@ for cnt=1:maxloop
         continue;
     end
     if cnt ~= 1
-        if numel(least.data) < maxneibor
+        if numel(least.data) < fullthres
             weight = SimGraph_Full(ftspace(:,least.data), 1);
         else
             neibor = maxneibor;
-            weight = SimGraph_NearestNeighbors( ftspace(:,least.data), ...
-                                                neibor, 1, 1);
+            if numel(least.data) < blocksz
+                blocksz = numel(least.data);
+            end
+            weight = gen_nn_distance( ftspace(:,least.data)', neibor, blocksz, 0);
         end
     end
     
-    Cluster = SpectralClustering(weight, 2, 3);
-    c1 = logical( Cluster(:,1) );
-    c2 = logical( Cluster(:,2) );
+    [Cluster, ~, ~, totaltime ] = sc(weight, 1, 2);
+    Cluster(find(Cluster~=1)) = 0;
+    c1 = logical( Cluster );
+    c2 = ~c1;
 %    [c1, c2] = minmaxcut(weight);
 %     Cluster = SpectralClustering(weight, 2, 3);
 %     Cluster = logical(Cluster);
@@ -77,19 +85,20 @@ for cnt=1:maxloop
     least.right = right;
     
     realcnt = realcnt + 1;
-    display(sprintf('Data left: %d', size(left.data,2)));
-    display(sprintf('Data right: %d', size(right.data,2)));
-    display(sprintf('Data left weight: %d', left.other.weight ...
+    disp(sprintf('Data left: %d', size(left.data,2)));
+    disp(sprintf('Data right: %d', size(right.data,2)));
+    disp(sprintf('Data left weight: %d', left.other.weight ...
                     ));
-    display(sprintf('Data right weight: %d', right.other.weight ...
+    disp(sprintf('Data right weight: %d', right.other.weight ...
                     ));
-    display(sprintf('Data left sim: %d', left.other.sim ));
-    display(sprintf('Data right sim: %d',right.other.sim ));
+    disp(sprintf('Data left sim: %d', left.other.sim ));
+    disp( sprintf('Data right sim: %d',right.other.sim ));
+    disp(sprintf('Cluster time: %d', totaltime ));
     toc
 end%end for loop
 
 %learn an svm for each inner node
-display('training svm');
+disp('training svm');
 tic
 trainsvm4node(root, ftspace);
 toc
